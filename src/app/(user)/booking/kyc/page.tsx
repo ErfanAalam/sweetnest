@@ -49,8 +49,8 @@ export default function KYCPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  const isMockMode = !process.env.NEXT_PUBLIC_AWS_S3_BUCKET ||
-                     process.env.NEXT_PUBLIC_AWS_S3_BUCKET.includes('your-');
+  const isMockMode = !process.env.NEXT_PUBLIC_S3_BUCKET ||
+                     process.env.NEXT_PUBLIC_S3_BUCKET.includes('your-');
 
   const fileRefs = useRef<Record<DocKey, HTMLInputElement | null>>({
     aadhar: null, pan: null, passport: null, drivingLicense: null,

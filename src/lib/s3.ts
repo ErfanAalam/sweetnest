@@ -1,9 +1,11 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
-const region    = process.env.AWS_REGION        ?? '';
-const bucket    = process.env.AWS_S3_BUCKET     ?? '';
-const accessKey = process.env.AWS_ACCESS_KEY_ID ?? '';
-const secretKey = process.env.AWS_SECRET_ACCESS_KEY ?? '';
+// NOTE: env vars are prefixed S3_ (not AWS_) because AWS Amplify reserves the
+// "AWS" prefix and rejects any variable starting with it.
+const region    = process.env.S3_REGION            ?? '';
+const bucket    = process.env.S3_BUCKET            ?? '';
+const accessKey = process.env.S3_ACCESS_KEY_ID     ?? '';
+const secretKey = process.env.S3_SECRET_ACCESS_KEY ?? '';
 
 /**
  * True when real S3 credentials are present (i.e. not blank and not the
@@ -30,7 +32,7 @@ function client(): S3Client {
 /** Public URL for an object key. Honours AWS_S3_PUBLIC_URL (e.g. a CloudFront
  *  domain) and otherwise builds the default virtual-hosted S3 URL. */
 export function publicUrl(key: string): string {
-  const base = process.env.AWS_S3_PUBLIC_URL?.replace(/\/$/, '');
+  const base = process.env.S3_PUBLIC_URL?.replace(/\/$/, '');
   if (base) return `${base}/${key}`;
   return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 }
@@ -67,7 +69,7 @@ export async function deleteFromS3(url: string): Promise<boolean> {
 export function keyFromUrl(url: string): string | null {
   if (!url || url.startsWith('data:')) return null;
 
-  const base = process.env.AWS_S3_PUBLIC_URL?.replace(/\/$/, '');
+  const base = process.env.S3_PUBLIC_URL?.replace(/\/$/, '');
   if (base && url.startsWith(base + '/')) {
     return url.slice(base.length + 1);
   }

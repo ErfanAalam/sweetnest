@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       url = await uploadToS3(buffer, key, file.type);
     } else {
       // Dev / unconfigured fallback — return a base64 data URL
-      console.warn('[upload] AWS S3 not configured — using base64 fallback. Set AWS_S3_BUCKET / AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_REGION in .env.local');
+      console.warn('[upload] AWS S3 not configured — using base64 fallback. Set S3_BUCKET / S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY / S3_REGION in .env.local');
       url = `data:${file.type};base64,${buffer.toString('base64')}`;
     }
 

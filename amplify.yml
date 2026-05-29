@@ -1,0 +1,32 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        # Amplify makes Console env vars available at BUILD time, but does NOT
+        # inject non-NEXT_PUBLIC_ vars into the Next.js SSR (Lambda) runtime.
+        # Write the server-side vars into .env.production so Next.js loads them
+        # at runtime. NEXT_PUBLIC_* vars are inlined by `next build` directly.
+        - |
+          for k in DATABASE_URL JWT_SECRET NEXTAUTH_SECRET NEXTAUTH_URL \
+                   FIREBASE_SERVICE_ACCOUNT \
+                   S3_REGION S3_BUCKET S3_ACCESS_KEY_ID S3_SECRET_ACCESS_KEY S3_PUBLIC_URL \
+                   CASHFREE_CLIENT_SECRET CASHFREE_ENV \
+                   EMAIL_HOST EMAIL_PORT EMAIL_USER EMAIL_PASSWORD EMAIL_FROM \
+                   GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET \
+                   DISCORD_WEBHOOK_URL CRON_SECRET \
+                   VAPID_PRIVATE_KEY VAPID_SUBJECT; do
+            v=$(printenv "$k" || true)
+            if [ -n "$v" ]; then printf '%s=%s\n' "$k" "$v" >> .env.production; fi
+          done
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*

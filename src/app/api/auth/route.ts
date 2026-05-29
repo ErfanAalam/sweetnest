@@ -37,9 +37,14 @@ export async function POST(request: NextRequest) {
       let decoded: { phone_number?: string };
       try {
         decoded = await adminAuth.verifyIdToken(idToken);
-      } catch (err) {
+      } catch (err: any) {
         console.error('[Auth] Firebase token verification failed:', err);
-        return NextResponse.json({ error: 'OTP verification failed. Please try again.' }, { status: 401 });
+        // Surface the underlying reason to help diagnose deploy/env issues.
+        const detail = err?.errorInfo?.code || err?.code || err?.message || 'unknown';
+        return NextResponse.json(
+          { error: 'OTP verification failed. Please try again.', detail },
+          { status: 401 }
+        );
       }
 
       const phone = normalizePhone(decoded.phone_number || '');

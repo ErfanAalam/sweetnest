@@ -1,0 +1,242 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id                String     @id @default(cuid())
+  name              String?
+  email             String?
+  emailVerified     DateTime?
+  password          String?
+  phone             String     @unique
+  role              UserRole   @default(USER)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  bookings          Booking[]
+  kyc               KYC?
+  supportTickets    SupportTicket[]
+  pushSubscriptions PushSubscription[]
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model Booking {
+  id                String         @id @default(cuid())
+  userId            String
+  checkInDate       DateTime
+  checkOutDate      DateTime
+  numberOfGuests    Int            @default(1)
+  totalPrice        Float
+  status            BookingStatus  @default(PENDING)
+  paymentStatus     PaymentStatus  @default(PENDING)
+  kycStatus         KYCStatus      @default(PENDING)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  notes             String?
+  reservedUntil           DateTime?
+  checkinReminderSentAt   DateTime?   // set when the 1-hr push notification is sent
+
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment           Payment?
+  kyc               KYC?
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum KYCStatus {
+  PENDING
+  SUBMITTED
+  VERIFIED
+  REJECTED
+}
+
+model Payment {
+  id                String         @id @default(cuid())
+  bookingId         String         @unique
+  amount            Float
+  currency          String         @default("INR")
+  status            PaymentStatus  @default(PENDING)
+  paymentMethod     String?
+  transactionId     String?        @unique
+  orderId           String?        @unique
+  cashfreeOrderId   String?
+  failureReason     String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  booking           Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model KYC {
+  id                String         @id @default(cuid())
+  userId            String         @unique
+  bookingId         String?        @unique
+  aadharNumber      String?
+  aadharUrl         String?
+  panNumber         String?
+  panUrl            String?
+  passportNumber    String?
+  passportUrl       String?
+  drivingLicense    String?
+  drivingLicenseUrl String?
+  verificationStatus KYCStatus     @default(PENDING)
+  verifiedBy        String?
+  verifiedAt        DateTime?
+  rejectionReason   String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking           Booking?       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+}
+
+model Calendar {
+  id                String         @id @default(cuid())
+  date              DateTime       @unique
+  available         Boolean        @default(true)
+  price             Float          @default(5000)
+  blockedReason     String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model SupportTicket {
+  id                String         @id @default(cuid())
+  userId            String
+  subject           String
+  message           String
+  status            SupportStatus  @default(OPEN)
+  attachmentUrl     String?
+  adminReply        String?
+  repliedAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailLog {
+  id                String         @id @default(cuid())
+  to                String
+  subject           String
+  body              String
+  type              String
+  status            String         @default("SENT")
+  errorMessage      String?
+  createdAt         DateTime       @default(now())
+}
+
+model Property {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  address         String?
+  googleMapsUrl   String?
+  pricePerNight   Float           @default(5000)
+  taxPercent      Float           @default(18)
+  discountPercent Float           @default(0)
+  maxGuests       Int             @default(2)
+  bedrooms        Int             @default(1)
+  bathrooms       Int             @default(1)
+  sqft            Int?
+  isActive        Boolean         @default(true)
+  amenities       String          @default("[]")
+  checkInTime     String          @default("12:00")
+  checkOutTime    String          @default("11:00")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  media           PropertyMedia[]
+}
+
+model PropertyMedia {
+  id          String    @id @default(cuid())
+  propertyId  String
+  url         String
+  type        String    @default("PHOTO")
+  caption     String?
+  isCover     Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}

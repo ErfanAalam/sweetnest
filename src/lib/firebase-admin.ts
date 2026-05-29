@@ -6,11 +6,23 @@ function initAdmin() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT env var is not set');
 
+  // Accept either raw JSON, or base64-encoded JSON. Base64 is required on hosts
+  // like AWS Amplify, which split env-var values on commas (the JSON is full of
+  // them) and would otherwise truncate the value.
+  let jsonStr = raw.trim();
+  if (!jsonStr.startsWith('{')) {
+    try {
+      jsonStr = Buffer.from(jsonStr, 'base64').toString('utf8');
+    } catch {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT is neither JSON nor valid base64');
+    }
+  }
+
   let sa: admin.ServiceAccount;
   try {
-    sa = JSON.parse(raw);
+    sa = JSON.parse(jsonStr);
   } catch {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT is not valid JSON. Paste the full JSON from Firebase Console → Service Accounts → Generate new private key');
+    throw new Error('FIREBASE_SERVICE_ACCOUNT is not valid JSON. Paste the full JSON (or its base64) from Firebase Console → Service Accounts → Generate new private key');
   }
 
   return admin.initializeApp({ credential: admin.credential.cert(sa) });

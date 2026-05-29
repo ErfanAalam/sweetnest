@@ -29,7 +29,7 @@ function client(): S3Client {
   return _client;
 }
 
-/** Public URL for an object key. Honours AWS_S3_PUBLIC_URL (e.g. a CloudFront
+/** Public URL for an object key. Honours S3_PUBLIC_URL (e.g. a CloudFront
  *  domain) and otherwise builds the default virtual-hosted S3 URL. */
 export function publicUrl(key: string): string {
   const base = process.env.S3_PUBLIC_URL?.replace(/\/$/, '');

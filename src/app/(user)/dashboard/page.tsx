@@ -39,9 +39,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/lib/auth-context';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'home' | 'bookings' | 'kyc' | 'support'>('home');
@@ -173,8 +175,7 @@ export default function DashboardPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'logout' }),
     }).catch(() => {});
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout(); // clears localStorage + shared auth context
     router.push('/');
   };
 

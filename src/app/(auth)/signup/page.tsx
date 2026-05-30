@@ -7,9 +7,11 @@ import Image from 'next/image';
 import { Phone, ShieldCheck, User, AlertCircle, ArrowLeft, CheckCircle, Loader } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { useAuth } from '@/lib/auth-context';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { user, login, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState<'details' | 'otp'>('details');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -30,6 +32,13 @@ export default function SignupPage() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  // Already authenticated? Skip the signup screen entirely.
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(user.role === 'ADMIN' ? '/admin' : '/dashboard');
+    }
+  }, [authLoading, user, router]);
 
   const clearVerifier = () => {
     try { recaptchaRef.current?.clear(); } catch {}
@@ -128,8 +137,7 @@ export default function SignupPage() {
         return;
       }
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      login(data.token, data.user);
       setSuccess(true);
       setTimeout(() => router.push('/dashboard'), 2000);
     } catch (err: any) {

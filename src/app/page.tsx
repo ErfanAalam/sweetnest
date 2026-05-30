@@ -28,6 +28,8 @@ import {
   Smartphone,
 } from 'lucide-react';
 import { usePWA } from '@/components/PWAProvider';
+import { useAuth } from '@/lib/auth-context';
+import { LayoutDashboard } from 'lucide-react';
 
 /* ── PWA install button — platform-aware ── */
 function PWALandingButton() {
@@ -102,6 +104,10 @@ function PWALandingButton() {
 }
 
 export default function LandingPage() {
+  const { user, isLoading: authLoading } = useAuth();
+  const isAuthed = !authLoading && !!user;
+  const homeHref = user?.role === 'ADMIN' ? '/admin' : '/dashboard';
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
@@ -162,12 +168,20 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" className="px-5 py-2 text-sm font-semibold text-stone-700 hover:text-amber-800 transition-colors">
-              Login
-            </Link>
-            <Link href="/signup" className="btn-primary px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-800 to-amber-700 hover:from-amber-900 hover:to-amber-800 shadow-md hover:shadow-lg text-white font-semibold transition-all">
-              Book Now
-            </Link>
+            {isAuthed ? (
+              <Link href={homeHref} className="btn-primary px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-800 to-amber-700 hover:from-amber-900 hover:to-amber-800 shadow-md hover:shadow-lg text-white font-semibold transition-all flex items-center gap-2">
+                <LayoutDashboard size={16} /> My Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="px-5 py-2 text-sm font-semibold text-stone-700 hover:text-amber-800 transition-colors">
+                  Login
+                </Link>
+                <Link href="/signup" className="btn-primary px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-800 to-amber-700 hover:from-amber-900 hover:to-amber-800 shadow-md hover:shadow-lg text-white font-semibold transition-all">
+                  Book Now
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -189,8 +203,14 @@ export default function LandingPage() {
             <a href="#pricing" className="block text-stone-600 font-medium py-2 hover:text-amber-700 transition-colors border-b border-stone-50" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <a href="#faq" className="block text-stone-600 font-medium py-2 hover:text-amber-700 transition-colors border-b border-stone-50" onClick={() => setMobileMenuOpen(false)}>FAQs</a>
             <div className="flex gap-4 pt-4">
-              <Link href="/login" className="btn-secondary flex-1 text-center py-2.5 rounded-full" onClick={() => setMobileMenuOpen(false)}>Login</Link>
-              <Link href="/signup" className="btn-primary flex-1 text-center py-2.5 rounded-full" onClick={() => setMobileMenuOpen(false)}>Book Now</Link>
+              {isAuthed ? (
+                <Link href={homeHref} className="btn-primary flex-1 text-center py-2.5 rounded-full" onClick={() => setMobileMenuOpen(false)}>My Dashboard</Link>
+              ) : (
+                <>
+                  <Link href="/login" className="btn-secondary flex-1 text-center py-2.5 rounded-full" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+                  <Link href="/signup" className="btn-primary flex-1 text-center py-2.5 rounded-full" onClick={() => setMobileMenuOpen(false)}>Book Now</Link>
+                </>
+              )}
             </div>
           </div>
         )}

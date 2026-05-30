@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, Poppins } from 'next/font/google';
 import './globals.css';
 import PWAProvider from '@/components/PWAProvider';
+import { AuthProvider } from '@/lib/auth-context';
 
 const playfair = Playfair_Display({
   subsets:  ['latin'],
@@ -58,9 +59,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="msapplication-TileColor"      content="#b45309" />
       </head>
       <body className="bg-[#FAFAF9] text-stone-900 antialiased">
-        <PWAProvider>
-          {children}
-        </PWAProvider>
+        <AuthProvider>
+          <PWAProvider>
+            {children}
+          </PWAProvider>
+        </AuthProvider>
       </body>
     </html>
   );

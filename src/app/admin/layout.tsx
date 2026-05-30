@@ -21,6 +21,7 @@ import {
   Building2
 } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/lib/auth-context';
 
 const DESKTOP_NAV_ITEMS = [
   { href: '/admin', icon: <LayoutDashboard size={17} />, label: 'Dashboard' },
@@ -50,6 +51,7 @@ const MORE_NAV_ITEMS = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { logout } = useAuth();
   const [user, setUser] = useState<any>(null);
   const [moreSheetOpen, setMoreSheetOpen] = useState(false);
 
@@ -68,8 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'logout' }),
     }).catch(() => {});
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout(); // clears localStorage + shared auth context
     router.push('/login');
   };
 

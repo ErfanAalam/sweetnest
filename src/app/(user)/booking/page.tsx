@@ -24,12 +24,25 @@ export default function BookingPage() {
   const [error, setError]     = useState('');
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) { router.push('/login'); return; }
+    // Availability is public — anyone can browse dates without logging in.
+    // Login is only required when proceeding to confirm the booking.
     fetch('/api/calendar')
       .then(r => r.json())
       .then(d => { if (d.blockedDates) setBlockedDates(d.blockedDates); })
       .catch(() => {});
-  }, [router]);
+
+    // Restore dates a guest picked before being sent to login.
+    try {
+      const pending = localStorage.getItem('pendingDates');
+      if (pending) {
+        const { checkIn: ci, checkOut: co, guests: g } = JSON.parse(pending);
+        if (ci) { const d = new Date(ci); setCheckIn(d); setCurrentMonth(d.getMonth()); setCurrentYear(d.getFullYear()); }
+        if (co) setCheckOut(new Date(co));
+        if (g) setGuests(g);
+        localStorage.removeItem('pendingDates');
+      }
+    } catch { /* ignore malformed cache */ }
+  }, []);
 
   const dk      = (d: Date) => d.toISOString().split('T')[0];
   const isPast  = (d: Date) => d < today;
@@ -49,8 +62,14 @@ export default function BookingPage() {
 
   const handleProceed = async () => {
     if (!checkIn || !checkOut || nights < 1) { setError('Please select check-in and check-out dates'); return; }
-    setLoading(true); setError('');
     const token = localStorage.getItem('token');
+    if (!token) {
+      // Preserve the chosen dates, then send the guest through login.
+      localStorage.setItem('pendingDates', JSON.stringify({ checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests }));
+      router.push('/login');
+      return;
+    }
+    setLoading(true); setError('');
     try {
       const res  = await fetch('/api/bookings', {
         method: 'POST',

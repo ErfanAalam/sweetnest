@@ -398,7 +398,7 @@ export default function PropertiesPage() {
                       alt={p.name}
                       fill
                       className="object-cover"
-                      unoptimized={cover.url.startsWith('data:')}
+                      unoptimized
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -816,7 +816,7 @@ export default function PropertiesPage() {
                                   alt={m.caption || 'Property photo'}
                                   fill
                                   className="object-cover"
-                                  unoptimized={m.url.startsWith('data:')}
+                                  unoptimized
                                 />
                               )}
 

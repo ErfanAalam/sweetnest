@@ -15,7 +15,7 @@ const NAV_LINKS = [
   { href: '/faqs', label: 'FAQs' },
 ];
 
-export default function SiteHeader() {
+export default function SiteHeader({ overDark = false }: { overDark?: boolean }) {
   const { user, isLoading } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -23,6 +23,9 @@ export default function SiteHeader() {
 
   const isAuthed = !isLoading && !!user;
   const homeHref = user?.role === 'ADMIN' ? '/admin' : '/dashboard';
+
+  // Light text while transparent over a dark hero; reverts once scrolled.
+  const light = overDark && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -48,7 +51,7 @@ export default function SiteHeader() {
           <div className="relative w-9 h-9 rounded-full overflow-hidden ring-1 ring-stone-900/10">
             <Image src="/logo.png" alt="Sweet Nest" fill sizes="36px" className="object-cover" priority />
           </div>
-          <span className="font-playfair text-lg font-semibold tracking-tight text-stone-900">
+          <span className={`font-playfair text-lg font-semibold tracking-tight transition-colors ${light ? 'text-white' : 'text-stone-900'}`}>
             Sweet&nbsp;Nest
           </span>
         </Link>
@@ -62,12 +65,14 @@ export default function SiteHeader() {
                 key={l.href}
                 href={l.href}
                 className={`relative text-[13px] font-medium tracking-wide transition-colors ${
-                  active ? 'text-amber-800' : 'text-stone-600 hover:text-stone-900'
+                  active
+                    ? light ? 'text-amber-300' : 'text-amber-800'
+                    : light ? 'text-white/80 hover:text-white' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 {l.label}
                 <span
-                  className={`absolute -bottom-1.5 left-0 h-px bg-amber-800 transition-all duration-300 ${
+                  className={`absolute -bottom-1.5 left-0 h-px transition-all duration-300 ${light ? 'bg-amber-300' : 'bg-amber-800'} ${
                     active ? 'w-full' : 'w-0'
                   }`}
                 />
@@ -81,18 +86,22 @@ export default function SiteHeader() {
           {isAuthed ? (
             <Link
               href={homeHref}
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-stone-900 border border-stone-300 rounded-full px-4 py-2 hover:border-stone-900 transition-colors"
+              className={`inline-flex items-center gap-1.5 text-[13px] font-semibold rounded-full px-4 py-2 transition-colors ${
+                light ? 'text-white border border-white/40 hover:border-white' : 'text-stone-900 border border-stone-300 hover:border-stone-900'
+              }`}
             >
               My Dashboard <ArrowUpRight size={14} />
             </Link>
           ) : (
             <>
-              <Link href="/login" className="text-[13px] font-medium text-stone-600 hover:text-stone-900 transition-colors">
+              <Link href="/login" className={`text-[13px] font-medium transition-colors ${light ? 'text-white/80 hover:text-white' : 'text-stone-600 hover:text-stone-900'}`}>
                 Login
               </Link>
               <Link
                 href="/booking"
-                className="text-[13px] font-semibold text-white bg-stone-900 hover:bg-amber-800 rounded-full px-5 py-2 transition-colors"
+                className={`text-[13px] font-semibold rounded-full px-5 py-2 transition-colors ${
+                  light ? 'text-stone-900 bg-white hover:bg-amber-50' : 'text-white bg-stone-900 hover:bg-amber-800'
+                }`}
               >
                 Book a Stay
               </Link>
@@ -102,7 +111,7 @@ export default function SiteHeader() {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 -mr-2 text-stone-800"
+          className={`md:hidden p-2 -mr-2 transition-colors ${light ? 'text-white' : 'text-stone-800'}`}
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
         >

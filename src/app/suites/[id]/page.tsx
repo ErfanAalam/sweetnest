@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   MapPin, Users, BedDouble, Bath, Maximize, Clock, ArrowLeft,
-  Check, Loader2, Play, ChevronLeft, ChevronRight, ArrowUpRight,
+  Check, Loader2, Play, ChevronLeft, ChevronRight, ArrowUpRight, Navigation,
 } from 'lucide-react';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
@@ -63,6 +63,12 @@ export default function SuiteDetailPage({ params }: { params: Promise<{ id: stri
   const rate = effectiveRate(property.pricePerNight, property.discountPercent);
   const taxAmt = Math.round((rate * property.taxPercent) / 100);
   const amenities = parseAmenities(property.amenities);
+
+  // Location / map — keyless Google Maps embed driven by the suite address.
+  const mapQuery = property.address || property.name;
+  const mapEmbedSrc = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=15&output=embed`;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
+  const openMapUrl = property.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
 
   const specs = [
     { icon: <BedDouble size={17} />, label: `${property.bedrooms} Bedroom${property.bedrooms === 1 ? '' : 's'}` },
@@ -264,6 +270,51 @@ export default function SuiteDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
         </div>
+
+        {/* Location / Map */}
+        <section className="mt-16 pt-12 border-t border-stone-200/70">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+            <div>
+              <p className="text-amber-800 text-xs font-semibold uppercase tracking-[0.2em] mb-2">Location</p>
+              <h2 className="font-playfair text-2xl sm:text-3xl font-semibold">Where you&rsquo;ll be</h2>
+              {property.address && (
+                <p className="flex items-center gap-1.5 text-stone-500 text-sm mt-2">
+                  <MapPin size={14} className="text-amber-700" /> {property.address}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-stone-900 hover:bg-amber-800 rounded-full px-6 py-3 transition-colors w-fit"
+              >
+                <Navigation size={15} /> Get directions
+              </a>
+              <a
+                href={openMapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-700 border border-stone-300 rounded-full px-6 py-3 hover:border-stone-900 transition-colors w-fit"
+              >
+                Open in Google Maps <ArrowUpRight size={14} />
+              </a>
+            </div>
+          </div>
+
+          <div className="relative rounded-2xl overflow-hidden border border-stone-200 bg-stone-100 aspect-[16/10] sm:aspect-[21/9] shadow-[0_12px_40px_-20px_rgba(0,0,0,0.25)]">
+            <iframe
+              title={`Map showing ${property.name}`}
+              src={mapEmbedSrc}
+              className="absolute inset-0 w-full h-full"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </div>
+        </section>
       </div>
 
       <SiteFooter />

@@ -93,7 +93,7 @@ export async function PUT(request: NextRequest) {
     if (!(await requireAdmin(user.userId))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json();
-    const { action, id, reason, date, available, status, reply } = body;
+    const { action, id, reason, date, available, status, reply, propertyId } = body;
 
     if (action === 'approve-kyc') {
       const kyc = await prisma.kYC.update({
@@ -127,10 +127,11 @@ export async function PUT(request: NextRequest) {
     }
 
     if (action === 'toggle-calendar') {
+      if (!propertyId) return NextResponse.json({ error: 'propertyId is required' }, { status: 400 });
       const entry = await prisma.calendar.upsert({
-        where: { date: new Date(date) },
+        where: { propertyId_date: { propertyId, date: new Date(date) } },
         update: { available, blockedReason: available ? null : reason || 'Blocked by admin' },
-        create: { date: new Date(date), available, blockedReason: available ? null : reason || 'Blocked by admin' },
+        create: { propertyId, date: new Date(date), available, blockedReason: available ? null : reason || 'Blocked by admin' },
       });
       return NextResponse.json({ success: true, entry });
     }

@@ -23,7 +23,7 @@ const ADMIN_PATHS = ['/admin'];
 // Protected user areas. Booking sub-steps are listed individually so the
 // public /booking date page stays open while terms/payment/kyc require login.
 const USER_PATHS = [
-  '/dashboard', '/support', '/kyc', '/payment', '/confirmation',
+  '/dashboard', '/support', '/kyc', '/payment', '/confirmation', '/manager',
   '/booking/terms', '/booking/payment', '/booking/kyc', '/booking/confirmation',
 ];
 

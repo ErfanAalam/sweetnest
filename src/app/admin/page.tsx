@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   const statCards = [
     { 
       label: 'Revenue', 
-      value: stats?.totalRevenue != null ? `₹${stats.totalRevenue.toLocaleString('en-IN')}` : '₹0', 
+      value: stats?.totalRevenue !=null ? `₹${stats.totalRevenue.toLocaleString('en-IN')}` : '₹0', 
       icon: <TrendingUp size={18} />, 
       href: '/admin/payments', 
       colorClass: 'bg-emerald-55 text-emerald-800 border-emerald-100/50',

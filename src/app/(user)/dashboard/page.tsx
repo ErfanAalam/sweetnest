@@ -53,6 +53,7 @@ export default function DashboardPage() {
   const [tickets, setTickets]     = useState<any[]>([]);
   const [kyc, setKyc]             = useState<any>(null);
   const [property, setProperty]   = useState<any>(null); // first active property
+  const [canManageCalendars, setCanManageCalendars] = useState(false); // assigned calendar manager
   
   // Loading & Action States
   const [loading, setLoading] = useState(true);
@@ -102,11 +103,22 @@ export default function DashboardPage() {
       return;
     }
 
-    setUser(JSON.parse(storedUser));
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
     setToken(storedToken);
 
     loadAllData(storedToken);
+    if (parsedUser.role !== 'ADMIN') checkCalendarAccess(storedToken);
   }, [router]);
+
+  // Show a "Manage Calendars" entry only for users assigned to a property.
+  const checkCalendarAccess = async (jwtToken: string) => {
+    try {
+      const res = await fetch('/api/manager/properties', { headers: { Authorization: `Bearer ${jwtToken}` } });
+      const data = await res.json();
+      if (data.success && data.properties.length > 0) setCanManageCalendars(true);
+    } catch { /* silent */ }
+  };
 
   const loadAllData = async (jwtToken: string) => {
     setRefreshing(true);
@@ -323,7 +335,26 @@ export default function DashboardPage() {
             {/* ───── TAB 1: HOME FEED ───── */}
             {activeTab === 'home' && (
               <div className="space-y-6">
-                
+
+                {/* Calendar manager entry — only for assigned users */}
+                {canManageCalendars && (
+                  <Link
+                    href="/manager"
+                    className="flex items-center justify-between gap-4 bg-white border border-amber-200 rounded-2xl p-4 shadow-sm hover:border-amber-400 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-amber-50 text-amber-800 rounded-xl">
+                        <Calendar size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-stone-900">Manage Property Calendars</p>
+                        <p className="text-[11px] text-stone-400">You&apos;re assigned to manage availability for one or more properties.</p>
+                      </div>
+                    </div>
+                    <ArrowUpRight size={16} className="text-amber-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </Link>
+                )}
+
                 {/* Mobile Welcome Greeting */}
                 <div className="bg-gradient-to-br from-stone-900 via-stone-850 to-amber-950 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />

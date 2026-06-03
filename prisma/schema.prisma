@@ -62,6 +62,7 @@ model User {
   kyc               KYC?
   supportTickets    SupportTicket[]
   pushSubscriptions PushSubscription[]
+  managedProperties PropertyManager[]
 }
 
 enum UserRole {
@@ -153,12 +154,17 @@ model KYC {
 
 model Calendar {
   id                String         @id @default(cuid())
-  date              DateTime       @unique
+  propertyId        String
+  date              DateTime
   available         Boolean        @default(true)
   price             Float          @default(5000)
   blockedReason     String?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+
+  property          Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, date])
 }
 
 model SupportTicket {
@@ -226,6 +232,20 @@ model Property {
   updatedAt       DateTime        @updatedAt
 
   media           PropertyMedia[]
+  calendarEntries Calendar[]
+  managers        PropertyManager[]
+}
+
+model PropertyManager {
+  id          String    @id @default(cuid())
+  userId      String
+  propertyId  String
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
 }
 
 model PropertyMedia {

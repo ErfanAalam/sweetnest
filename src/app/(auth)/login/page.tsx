@@ -31,10 +31,17 @@ export default function LoginPage() {
     };
   }, []);
 
+  // Where to land after authenticating: admins go to their console; guests who were
+  // mid-booking resume that booking, everyone else lands on their dashboard.
+  const postLoginDestination = (role: string) => {
+    if (role === 'ADMIN') return '/admin';
+    return localStorage.getItem('pendingDates') ? '/booking' : '/dashboard';
+  };
+
   // Already authenticated? Skip the login screen entirely.
   useEffect(() => {
     if (!authLoading && user) {
-      router.replace(user.role === 'ADMIN' ? '/admin' : '/dashboard');
+      router.replace(postLoginDestination(user.role));
     }
   }, [authLoading, user, router]);
 
@@ -133,7 +140,7 @@ export default function LoginPage() {
       }
 
       login(data.token, data.user);
-      router.push(data.user.role === 'ADMIN' ? '/admin' : '/dashboard');
+      router.push(postLoginDestination(data.user.role));
     } catch (err: any) {
       setError(
         err.code === 'auth/invalid-verification-code'

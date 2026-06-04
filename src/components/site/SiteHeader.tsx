@@ -98,7 +98,7 @@ export default function SiteHeader({ overDark = false }: { overDark?: boolean })
                 Login
               </Link>
               <Link
-                href="/booking"
+                href="/suites"
                 className={`text-[13px] font-semibold rounded-full px-5 py-2 transition-colors ${
                   light ? 'text-stone-900 bg-white hover:bg-amber-50' : 'text-white bg-stone-900 hover:bg-amber-800'
                 }`}
@@ -142,7 +142,7 @@ export default function SiteHeader({ overDark = false }: { overDark?: boolean })
                   <Link href="/login" className="flex-1 text-center text-sm font-semibold text-stone-800 border border-stone-300 rounded-full py-3">
                     Login
                   </Link>
-                  <Link href="/booking" className="flex-1 text-center text-sm font-semibold text-white bg-stone-900 rounded-full py-3">
+                  <Link href="/suites" className="flex-1 text-center text-sm font-semibold text-white bg-stone-900 rounded-full py-3">
                     Book a Stay
                   </Link>
                 </>

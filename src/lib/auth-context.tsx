@@ -30,6 +30,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
+
+      // The middleware guards protected pages via an httpOnly cookie, not localStorage.
+      // Re-establish that cookie from the stored token so a surviving client session
+      // can't get bounced to /login; if the token is no longer valid, drop the session.
+      fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${storedToken}` },
+        body: JSON.stringify({ action: 'sync-session' }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setToken(null);
+            setUser(null);
+          }
+        })
+        .catch(() => { /* offline / transient — keep the optimistic session */ });
     }
     setIsLoading(false);
   }, []);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { generateToken } from '@/lib/jwt';
+import { generateToken, verifyToken } from '@/lib/jwt';
 import { adminAuth } from '@/lib/firebase-admin';
 
 const COOKIE_OPTIONS = {
@@ -24,6 +24,21 @@ export async function POST(request: NextRequest) {
     if (action === 'logout') {
       const response = NextResponse.json({ success: true });
       response.cookies.delete('token');
+      return response;
+    }
+
+    // Re-establish the httpOnly cookie the middleware relies on from a still-valid
+    // client token. Keeps the localStorage session and the cookie from drifting apart
+    // (e.g. cookie expired/cleared while localStorage survived), which would otherwise
+    // bounce a logged-in user to /login on any protected page navigation.
+    if (action === 'sync-session') {
+      const authHeader = request.headers.get('authorization');
+      const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : body.token;
+      if (!token || !verifyToken(token)) {
+        return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+      }
+      const response = NextResponse.json({ success: true });
+      response.cookies.set('token', token, COOKIE_OPTIONS);
       return response;
     }
 

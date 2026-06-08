@@ -42,6 +42,9 @@ export default function AboutPage() {
               between sterile hotel rooms and unpredictable rentals. So we built the middle —
               fully serviced apartments with the polish of a boutique hotel and the ease of home.
             </p>
+            <p className="mt-4 text-stone-600 text-[15px] leading-[1.8] max-w-lg">
+              Sweet Nest is a child company of <span className="font-semibold text-stone-900">DABLA INFO SYSTEMS PVT. LTD.</span> and is owned by <span className="font-semibold text-stone-900">Mr. Hemant Sharma</span>.
+            </p>
             <Link
               href="/suites"
               className="inline-flex items-center gap-1.5 mt-7 text-sm font-semibold text-white bg-stone-900 hover:bg-amber-800 rounded-full px-6 py-3 transition-colors"

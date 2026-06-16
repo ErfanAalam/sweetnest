@@ -57,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title"   content="Sweet Nest" />
         <meta name="msapplication-TileImage"      content="/logo.png" />
         <meta name="msapplication-TileColor"      content="#b45309" />
+        <meta name="cryptomus" content="c69490bc" />
       </head>
       <body className="bg-[#FAFAF9] text-stone-900 antialiased">
         <AuthProvider>
